@@ -5,14 +5,13 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship,
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 # -------------------------------------------------
-# Flask & DB BAŞLANGIÇ
+# Flask & DB
 # -------------------------------------------------
 app = Flask(__name__)
-app.wsgi_app = ProxyFix(app.wsgi_app)  # Render/nginx proxy fix
-app.secret_key = os.getenv("SECRET_KEY", "moon-secret-key")  # PROD: Render > Environment
+app.wsgi_app = ProxyFix(app.wsgi_app)
+app.secret_key = os.getenv("SECRET_KEY", "moon-secret-key")
 
-# Kalıcılık için Render'da DATABASE_URL'i bir diske ver:
-# sqlite:////var/data/cafe.db   (Settings > Disks: /var/data olarak bağla)
+# Kalıcı disk bağlarsan: sqlite:////var/data/cafe.db
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///cafe.db")
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True, future=True)
@@ -52,47 +51,51 @@ class Flavor(Base):
 
 
 # -------------------------------------------------
-# ŞEMA GÜVENCE: eski tabloda eksik kolonları ekle
+# ŞEMA GÜVENCE (ORM sorgusu yapmadan!)
 # -------------------------------------------------
 def ensure_schema():
+    # Tablo yoksa oluştur
+    Base.metadata.create_all(engine)
+
+    # Mevcut kolonları oku
     with engine.connect() as conn:
         cols = [row[1] for row in conn.execute(text('PRAGMA table_info(categories)')).fetchall()]
 
-    # 'key' yoksa ekle
-    if 'key' not in cols:
-        with engine.begin() as conn:
-            conn.execute(text('ALTER TABLE categories ADD COLUMN "key" TEXT'))
-        # Eski kayıtlara makul key ata (title'dan slug)
-        s = DBSession()
-        try:
-            cats = s.query(Category).all()
-            for c in cats:
-                if not getattr(c, 'key', None):
-                    slug = (c.title or "").lower().strip().replace(" ", "-")
-                    c.key = slug if slug else f"cat-{c.id}"
-            s.commit()
-        finally:
-            s.close()
+    # Eksik kolonları topla
+    to_add = []
+    if 'key' not in cols:   to_add.append(('key',   'TEXT'))
+    if 'img' not in cols:   to_add.append(('img',   'TEXT'))
+    if 'price' not in cols: to_add.append(('price', 'TEXT'))
+    if 'note' not in cols:  to_add.append(('note',  'TEXT'))
 
-    # Diğer olası eksikler
-    extra = []
-    if 'img' not in cols:   extra.append(('img',   'TEXT'))
-    if 'price' not in cols: extra.append(('price', 'TEXT'))
-    if 'note' not in cols:  extra.append(('note',  'TEXT'))
-    if extra:
+    # ALTER TABLE ile eksikleri ekle
+    if to_add:
         with engine.begin() as conn:
-            for name, typ in extra:
+            for name, typ in to_add:
                 conn.execute(text(f'ALTER TABLE categories ADD COLUMN "{name}" {typ}'))
+
+    # key boş/NULL ise title'dan slug üret (ORM KULLANMADAN)
+    with engine.begin() as conn:
+        # SQLite'ta replace ve lower mevcut
+        conn.execute(text("""
+            UPDATE categories
+            SET "key" = LOWER(REPLACE(COALESCE(title, ''), ' ', '-'))
+            WHERE ("key" IS NULL OR TRIM("key") = '')
+              AND COALESCE(title, '') <> '';
+        """))
 
 
 # -------------------------------------------------
-# SEED (ilk kurulumda yükle)
+# SEED (ilk kurulum)
 # -------------------------------------------------
 def seed_if_empty():
     s = DBSession()
     try:
-        if s.query(Category).count() > 0:
+        # Kayıt varsa dokunma
+        count = s.query(Category).count()
+        if count > 0:
             return
+
         cats = [
             dict(key="milkshake",   title="Milkshake",   img="milkshake.jpeg",   price="139.00 TL",
                  items=['çilek','kavun','muz','karamel','mango','çikolata']),
@@ -110,7 +113,7 @@ def seed_if_empty():
         for c in cats:
             cat = Category(key=c["key"], title=c["title"], img=c["img"], price=c["price"])
             s.add(cat)
-            s.flush()  # cat.id için
+            s.flush()  # cat.id üret
             for f in c["items"]:
                 s.add(Flavor(name=f, category_id=cat.id))
         s.commit()
@@ -119,14 +122,13 @@ def seed_if_empty():
         s.close()
 
 
-# ---- tablo oluştur + schema düzelt + seed ----
-Base.metadata.create_all(engine)
+# ---- sıralama: tablo -> şema düzelt -> seed ----
 ensure_schema()
 seed_if_empty()
 
 
 # -------------------------------------------------
-# YARDIMCI
+# Yardımcı
 # -------------------------------------------------
 def require_login():
     return bool(session.get("admin"))
@@ -136,7 +138,7 @@ ADMIN_PASS = os.getenv("ADMIN_PASS", "1234")
 
 
 # -------------------------------------------------
-# ROUTES (MÜŞTERİ)
+# ROUTES (Müşteri)
 # -------------------------------------------------
 @app.route("/")
 def root():
@@ -144,7 +146,6 @@ def root():
 
 @app.route("/menu")
 def menu():
-    # Ön yüzde JS, /api/cold-data'dan çekecek
     return render_template("menu.html")
 
 @app.route("/api/cold-data")
@@ -168,7 +169,7 @@ def api_cold_data():
 
 
 # -------------------------------------------------
-# ROUTES (ADMIN)
+# ROUTES (Admin)
 # -------------------------------------------------
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
@@ -289,8 +290,7 @@ def admin_flavors_delete(cat_id, flavor_id):
 
 
 # -------------------------------------------------
-# LOCAL GELİŞTİRME
+# Local geliştime
 # -------------------------------------------------
 if __name__ == "__main__":
-    # Local'de debug açık. Render prod'da gunicorn kullanıyor.
     app.run(debug=True, host="0.0.0.0", port=5000)
