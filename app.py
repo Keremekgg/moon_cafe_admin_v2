@@ -1,6 +1,6 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, abort
-from sqlalchemy import create_engine, Integer, String, ForeignKey, Text, select
+from sqlalchemy import create_engine, Integer, String, ForeignKey, Text, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, sessionmaker, scoped_session
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -8,15 +8,15 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 # Flask & DB BAŞLANGIÇ
 # -------------------------------------------------
 app = Flask(__name__)
-app.wsgi_app = ProxyFix(app.wsgi_app)  # render/nginx proxy düzeltmesi
-app.secret_key = os.getenv("SECRET_KEY", "moon-secret-key")  # PROD'da .env olarak ayarlayabilirsin
+app.wsgi_app = ProxyFix(app.wsgi_app)  # Render/nginx proxy fix
+app.secret_key = os.getenv("SECRET_KEY", "moon-secret-key")  # PROD: Render > Environment
 
-# DATABASE_URL yoksa local sqlite'a düşer.
+# Kalıcılık için Render'da DATABASE_URL'i bir diske ver:
+# sqlite:////var/data/cafe.db   (Settings > Disks: /var/data olarak bağla)
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///cafe.db")
 
-# SQLAlchemy engine & session
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
-SessionFactory = sessionmaker(bind=engine)
+engine = create_engine(DATABASE_URL, pool_pre_ping=True, future=True)
+SessionFactory = sessionmaker(bind=engine, future=True)
 DBSession = scoped_session(SessionFactory)
 
 
@@ -52,17 +52,47 @@ class Flavor(Base):
 
 
 # -------------------------------------------------
-# İLK KURULUM / SEED
+# ŞEMA GÜVENCE: eski tabloda eksik kolonları ekle
+# -------------------------------------------------
+def ensure_schema():
+    with engine.connect() as conn:
+        cols = [row[1] for row in conn.execute(text('PRAGMA table_info(categories)')).fetchall()]
+
+    # 'key' yoksa ekle
+    if 'key' not in cols:
+        with engine.begin() as conn:
+            conn.execute(text('ALTER TABLE categories ADD COLUMN "key" TEXT'))
+        # Eski kayıtlara makul key ata (title'dan slug)
+        s = DBSession()
+        try:
+            cats = s.query(Category).all()
+            for c in cats:
+                if not getattr(c, 'key', None):
+                    slug = (c.title or "").lower().strip().replace(" ", "-")
+                    c.key = slug if slug else f"cat-{c.id}"
+            s.commit()
+        finally:
+            s.close()
+
+    # Diğer olası eksikler
+    extra = []
+    if 'img' not in cols:   extra.append(('img',   'TEXT'))
+    if 'price' not in cols: extra.append(('price', 'TEXT'))
+    if 'note' not in cols:  extra.append(('note',  'TEXT'))
+    if extra:
+        with engine.begin() as conn:
+            for name, typ in extra:
+                conn.execute(text(f'ALTER TABLE categories ADD COLUMN "{name}" {typ}'))
+
+
+# -------------------------------------------------
+# SEED (ilk kurulumda yükle)
 # -------------------------------------------------
 def seed_if_empty():
-    """Tablolar boşsa Moon Cafe verilerini yükler."""
     s = DBSession()
     try:
-        count = s.query(Category).count()
-        if count > 0:
+        if s.query(Category).count() > 0:
             return
-
-        # Kategoriler
         cats = [
             dict(key="milkshake",   title="Milkshake",   img="milkshake.jpeg",   price="139.00 TL",
                  items=['çilek','kavun','muz','karamel','mango','çikolata']),
@@ -77,11 +107,10 @@ def seed_if_empty():
             dict(key="bubble-tea",  title="Bubble Tea",  img="bubble_tea.avif",  price="149.00 TL",
                  items=['çilek','mango','çikolata','yaban mersini']),
         ]
-
         for c in cats:
             cat = Category(key=c["key"], title=c["title"], img=c["img"], price=c["price"])
             s.add(cat)
-            s.flush()  # cat.id üretmek için
+            s.flush()  # cat.id için
             for f in c["items"]:
                 s.add(Flavor(name=f, category_id=cat.id))
         s.commit()
@@ -90,8 +119,9 @@ def seed_if_empty():
         s.close()
 
 
-# Uygulama start-up: tabloları yarat ve seed et
+# ---- tablo oluştur + schema düzelt + seed ----
 Base.metadata.create_all(engine)
+ensure_schema()
 seed_if_empty()
 
 
@@ -99,9 +129,10 @@ seed_if_empty()
 # YARDIMCI
 # -------------------------------------------------
 def require_login():
-    if not session.get("admin"):
-        return False
-    return True
+    return bool(session.get("admin"))
+
+ADMIN_USER = os.getenv("ADMIN_USER", "mudur")
+ADMIN_PASS = os.getenv("ADMIN_PASS", "1234")
 
 
 # -------------------------------------------------
@@ -109,17 +140,13 @@ def require_login():
 # -------------------------------------------------
 @app.route("/")
 def root():
-    # ana sayfada menüye yönlendirebiliriz
     return redirect(url_for("menu"))
 
 @app.route("/menu")
 def menu():
-    # Mevcut menu.html dosyan çalışacak.
-    # JS artık /api/cold-data'dan veri çekecek.
+    # Ön yüzde JS, /api/cold-data'dan çekecek
     return render_template("menu.html")
 
-
-# JSON API: Menü verisi (menu.html buradan çeker)
 @app.route("/api/cold-data")
 def api_cold_data():
     s = DBSession()
@@ -145,11 +172,10 @@ def api_cold_data():
 # -------------------------------------------------
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
-    # Basit giriş: mudur / 1234
     if request.method == "POST":
         username = request.form.get("username", "")
         password = request.form.get("password", "")
-        if username == "mudur" and password == "1234":
+        if username == ADMIN_USER and password == ADMIN_PASS:
             session["admin"] = True
             return redirect(url_for("admin_dashboard"))
         return render_template("admin_login.html", error="Hatalı kullanıcı adı/şifre.")
@@ -172,8 +198,6 @@ def admin_dashboard():
     finally:
         s.close()
 
-
-# Basit kategori liste/ekle/sil örneği
 @app.route("/admin/cold")
 def admin_cold():
     if not require_login():
@@ -195,7 +219,6 @@ def admin_cold_add():
     price = request.form.get("price", "").strip()
     if not key or not title:
         return redirect(url_for("admin_cold"))
-
     s = DBSession()
     try:
         exists = s.query(Category).filter_by(key=key).first()
@@ -220,8 +243,6 @@ def admin_cold_delete(cat_id):
         s.close()
     return redirect(url_for("admin_cold"))
 
-
-# Bir kategorinin aromalarını yönetme
 @app.route("/admin/flavors/<int:cat_id>")
 def admin_flavors(cat_id):
     if not require_login():
@@ -271,5 +292,5 @@ def admin_flavors_delete(cat_id, flavor_id):
 # LOCAL GELİŞTİRME
 # -------------------------------------------------
 if __name__ == "__main__":
-    # Local çalışmada debug açık, Render'da gunicorn kullanılıyor.
+    # Local'de debug açık. Render prod'da gunicorn kullanıyor.
     app.run(debug=True, host="0.0.0.0", port=5000)
