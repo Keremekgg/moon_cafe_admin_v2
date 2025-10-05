@@ -8,85 +8,148 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <style>
-    :root{ --bg:#0b1220; --bg2:#0f1a33; --moon:#fff9c4; --txt:#0b1220; --txt-light:#f5fbff;
-      --accent:#6ecbff; --accent-2:#a0b6ff; --card:#1c2540cc; --shadow:0 20px 50px rgba(0,0,0,.45); --r:20px; }
-    *{box-sizing:border-box} html,body{height:100%}
-    body{margin:0; font-family:Poppins, system-ui, sans-serif; background:
-      radial-gradient(800px 500px at 80% -10%, #1e3a8a66, transparent 60%),
-      linear-gradient(180deg, var(--bg) 0%, var(--bg2) 60%);
-      color:var(--txt-light); overflow-x:hidden;}
-    .sky{position:fixed; inset:0; pointer-events:none; z-index:-1;}
-    .stars{position:absolute; inset:0; background:
-      radial-gradient(2px 2px at 20% 30%, #fff 60%, transparent 61%),
-      radial-gradient(1.5px 1.5px at 70% 10%, #fff 60%, transparent 61%),
-      radial-gradient(1.8px 1.8px at 40% 80%, #fff 60%, transparent 61%),
-      radial-gradient(1.5px 1.5px at 85% 60%, #fff 60%, transparent 61%);
-      opacity:.7; filter:drop-shadow(0 0 6px #9dd7ff);}
-    .moon{position:absolute; right:7vw; top:8vh; width:120px; aspect-ratio:1/1; border-radius:50%; background:radial-gradient(circle at 30% 30%, #fff 0%, #fff6 55%, #fff0 60%), var(--moon); box-shadow:0 0 80px 10px #fff5}
-    header{position:sticky; top:0; z-index:5; backdrop-filter:saturate(140%) blur(8px);
-      background:linear-gradient(180deg, rgba(11,18,32,.9), rgba(11,18,32,.35)); border-bottom:1px solid #ffffff22}
-    .top{max-width:1000px; margin:auto; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; gap:14px}
-    .title{display:flex; flex-direction:column}
-    .title b{font-family:"Playfair Display", serif; font-size:22px; letter-spacing:.3px}
-    .title span{font-size:12px; opacity:.8}
-    .badge{padding:6px 10px; border-radius:999px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#06121f; font-weight:700; letter-spacing:.3px}
-    .wrap{max-width:1000px; margin:auto; padding:22px}
-    .menu{display:flex; justify-content:flex-start}
-    .menu-card{width:220px; min-height:220px; height:auto; background:var(--card); color:var(--txt-light); border-radius:var(--r); box-shadow:var(--shadow); border:1px solid #2c3559; overflow:hidden; margin-right:auto; backdrop-filter:blur(12px); transition:.3s ease}
-    .menu-card:hover{transform:translateY(-4px) scale(1.02); box-shadow:0 24px 70px rgba(0,0,0,.6)}
-    .menu-card .head{padding:10px; background:linear-gradient(180deg, #ffffff22, #ffffff05)}
-    .menu-card .head h2{margin:0; font-size:18px; font-family:"Playfair Display", serif; text-align:center; color:var(--moon)}
-    .menu-card .body{padding:10px; display:flex; flex-direction:column; align-items:center; justify-content:center}
-    .menu-card img{width:100%; height:110px; object-fit:cover; border-radius:12px}
-    .list{display:flex; flex-direction:column; gap:12px; padding:12px}
-    .list-item{display:flex; align-items:center; gap:12px; padding:14px; border-radius:14px; background:rgba(255,255,255,.05); border:1px solid #2c3559; cursor:pointer; color:var(--txt-light); text-decoration:none; box-shadow:inset 0 0 10px rgba(255,255,255,.05); transition:.2s}
-    .list-item:hover{background:rgba(255,255,255,.12)}
-    .thumb{width:50px; height:40px; border-radius:8px; overflow:hidden; flex:0 0 50px; background:#0b1220; box-shadow:0 0 8px rgba(255,255,255,.2)}
-    .thumb img{width:100%; height:100%; object-fit:cover}
-    .meta{display:flex; flex-direction:column; gap:4px; flex:1}
-    .title-row{display:flex; align-items:baseline; justify-content:space-between; gap:10px}
-    .title-row b{font-size:15px; color:var(--moon)}
-    .title-row .price{padding:6px 10px; border-radius:999px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#06121f; font-weight:800; font-size:12px}
-    .meta small{color:#a0b6ff}
-    .flavors{display:flex; flex-wrap:wrap; gap:10px; padding:12px}
-    .flavor{padding:8px 12px; border-radius:10px; background:rgba(255,255,255,.08); border:1px solid #2c3559; color:var(--txt-light); box-shadow:inset 0 0 6px rgba(255,255,255,.08); transition:.2s; cursor:pointer}
-    .flavor:hover{background:rgba(255,255,255,.18)}
-    .actions{display:flex; gap:8px; margin-top:10px; justify-content:center}
-    .btn{padding:10px 14px; border-radius:12px; border:1px solid #2c3559; background:rgba(255,255,255,.08); cursor:pointer; font-weight:700; color:var(--moon); transition:.2s}
-    .btn.primary{background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#06121f; border-color:transparent}
-    .btn:hover{opacity:.85}
-    .modal-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.5); backdrop-filter:blur(4px); display:none; place-items:center; z-index:50}
-    .modal-backdrop.open{display:grid}
-    .modal{width:min(92vw, 380px); background:var(--card); color:var(--txt-light); border:1px solid #2c3559; border-radius:18px; box-shadow:0 30px 80px rgba(0,0,0,.6); padding:18px}
-    .modal h3{margin:0 0 8px; font-family:"Playfair Display", serif; color:var(--moon); font-size:20px}
-
-    /* === Duyuru bandı === */
-    .ticker-wrap{
-      width:100%; overflow:hidden; border-bottom:1px solid #ffffff22;
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      display:none;
+    :root {
+      --bg:#0b1220;
+      --bg2:#0f1a33;
+      --moon:#fff9c4;
+      --txt:#0b1220;
+      --txt-light:#f5fbff;
+      --accent:#6ecbff;
+      --accent-2:#a0b6ff;
+      --card:#1c2540cc;
+      --shadow:0 20px 50px rgba(0,0,0,.45);
+      --r:20px;
     }
-    .ticker{white-space:nowrap; display:inline-block; padding:8px 0; animation:ticker 18s linear infinite;}
-    .ticker span{color:#fff9c4; font-weight:700; margin-right:40px; text-shadow:0 0 10px rgba(255,255,255,.35);}
-    @keyframes ticker{ 0%{transform:translateX(100%);} 100%{transform:translateX(-100%);} }
+
+    *{box-sizing:border-box;}
+    html,body{height:100%;margin:0;font-family:Poppins,system-ui,sans-serif;
+      background:radial-gradient(800px 500px at 80% -10%,#1e3a8a66,transparent 60%),
+      linear-gradient(180deg,var(--bg) 0%,var(--bg2) 60%);
+      color:var(--txt-light);overflow-x:hidden;}
+
+    /* Gökyüzü dekoru */
+    .sky{position:fixed;inset:0;pointer-events:none;z-index:-1;}
+    .stars{position:absolute;inset:0;background:
+      radial-gradient(2px 2px at 20% 30%,#fff 60%,transparent 61%),
+      radial-gradient(1.5px 1.5px at 70% 10%,#fff 60%,transparent 61%),
+      radial-gradient(1.8px 1.8px at 40% 80%,#fff 60%,transparent 61%),
+      radial-gradient(1.5px 1.5px at 85% 60%,#fff 60%,transparent 61%);
+      opacity:.7;filter:drop-shadow(0 0 6px #9dd7ff);}
+    .moon{position:absolute;right:7vw;top:8vh;width:120px;aspect-ratio:1;border-radius:50%;
+      background:radial-gradient(circle at 30% 30%,#fff 0%,#fff6 55%,#fff0 60%),var(--moon);
+      box-shadow:0 0 80px 10px #fff5;}
+
+    /* Header */
+    header{position:sticky;top:0;z-index:5;backdrop-filter:saturate(140%) blur(8px);
+      background:linear-gradient(180deg,rgba(11,18,32,.9),rgba(11,18,32,.35));
+      border-bottom:1px solid #ffffff22;}
+    .top{max-width:1000px;margin:auto;padding:14px 18px;display:flex;
+      align-items:center;justify-content:space-between;gap:14px;}
+    .brand{display:flex;align-items:center;gap:12px;}
+    .title{display:flex;flex-direction:column;}
+    .title b{font-family:"Playfair Display",serif;font-size:22px;letter-spacing:.3px;}
+    .title span{font-size:12px;opacity:.8;}
+    .badge{padding:6px 10px;border-radius:999px;
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      color:#06121f;font-weight:700;letter-spacing:.3px;}
+
+    /* Kampanya yazısı (Marquee) */
+    .marquee {
+      background:linear-gradient(90deg,rgba(255,255,255,.15),rgba(255,255,255,.05));
+      color:var(--moon);
+      overflow:hidden;
+      white-space:nowrap;
+      padding:8px 0;
+      font-weight:600;
+      letter-spacing:0.5px;
+      font-size:14px;
+    }
+    .marquee span {
+      display:inline-block;
+      padding-left:100%;
+      animation:scroll 20s linear infinite;
+    }
+    @keyframes scroll {
+      from {transform:translateX(0);}
+      to {transform:translateX(-100%);}
+    }
+
+    .wrap{max-width:1000px;margin:auto;padding:22px;}
+
+    /* Menü yapısı */
+    .menu{display:flex;justify-content:flex-start;}
+    .menu-card{width:220px;min-height:220px;height:auto;background:var(--card);
+      color:var(--txt-light);border-radius:var(--r);box-shadow:var(--shadow);
+      border:1px solid #2c3559;overflow:hidden;margin-right:auto;
+      backdrop-filter:blur(12px);transition:.3s ease;}
+    .menu-card:hover{transform:translateY(-4px) scale(1.02);
+      box-shadow:0 24px 70px rgba(0,0,0,.6);}
+    .menu-card .head{padding:10px;background:linear-gradient(180deg,#ffffff22,#ffffff05);}
+    .menu-card .head h2{margin:0;font-size:18px;font-family:"Playfair Display",serif;text-align:center;color:var(--moon);}
+    .menu-card .body{padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+    .menu-card img{width:100%;height:110px;object-fit:cover;border-radius:12px;}
+
+    .list{display:flex;flex-direction:column;gap:12px;padding:12px;}
+    .list-item{display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;
+      background:rgba(255,255,255,.05);border:1px solid #2c3559;cursor:pointer;
+      color:var(--txt-light);text-decoration:none;
+      box-shadow:inset 0 0 10px rgba(255,255,255,.05);transition:.2s;}
+    .list-item:hover{background:rgba(255,255,255,.12);}
+    .thumb{width:50px;height:40px;border-radius:8px;overflow:hidden;flex:0 0 50px;
+      background:#0b1220;box-shadow:0 0 8px rgba(255,255,255,.2);}
+    .thumb img{width:100%;height:100%;object-fit:cover;}
+    .meta{display:flex;flex-direction:column;gap:4px;flex:1;}
+    .title-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+    .title-row b{font-size:15px;color:var(--moon);}
+    .title-row .price{padding:6px 10px;border-radius:999px;
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      color:#06121f;font-weight:800;font-size:12px;}
+    .meta small{color:#a0b6ff;}
+
+    .flavors{display:flex;flex-wrap:wrap;gap:10px;padding:12px;}
+    .flavor{padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.08);
+      border:1px solid #2c3559;color:var(--txt-light);
+      box-shadow:inset 0 0 6px rgba(255,255,255,.08);
+      transition:.2s;cursor:pointer;}
+    .flavor:hover{background:rgba(255,255,255,.18);}
+
+    .actions{display:flex;gap:8px;margin-top:10px;justify-content:center;}
+    .btn{padding:10px 14px;border-radius:12px;border:1px solid #2c3559;
+      background:rgba(255,255,255,.08);cursor:pointer;
+      font-weight:700;color:var(--moon);transition:.2s;}
+    .btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      color:#06121f;border-color:transparent;}
+    .btn:hover{opacity:.85;}
+
+    /* Modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);
+      backdrop-filter:blur(4px);display:none;place-items:center;z-index:50;}
+    .modal-backdrop.open{display:grid;}
+    .modal{width:min(92vw,380px);background:var(--card);color:var(--txt-light);
+      border:1px solid #2c3559;border-radius:18px;
+      box-shadow:0 30px 80px rgba(0,0,0,.6);padding:18px;}
+    .modal h3{margin:0 0 8px;font-family:"Playfair Display",serif;
+      color:var(--moon);font-size:20px;}
+    .modal p{margin:0 0 14px;}
   </style>
 </head>
 <body>
   <div class="sky" aria-hidden="true"><div class="stars"></div><div class="moon"></div></div>
+
   <header>
     <div class="top">
-      <div class="title">
-        <b>MOON CAFE</b>
-        <span>Kuzeykent • QR Menü</span>
+      <div class="brand">
+        <div class="title">
+          <b>MOON CAFE</b>
+          <span>Kuzeykent • QR Menü</span>
+        </div>
       </div>
-      <div class="badge">Sekme 1 • Giriş</div>
-    </div>
-
-    <!-- DUYURU BANDI -->
-    <div id="tickerWrap" class="ticker-wrap">
-      <div id="ticker" class="ticker"></div>
+      <div class="badge">QR Menü</div>
     </div>
   </header>
+
+  <!-- Kampanya yazısı -->
+  <div class="marquee"><span id="marquee-text">Hoş geldiniz! Moon Cafe'de keyifli vakitler ☕✨</span></div>
 
   <main class="wrap">
     <section class="wrap">
@@ -94,12 +157,12 @@
         <article class="menu-card" data-stage="0">
           <div class="head"><h2>Soğuk İçecekler</h2></div>
           <div class="body">
-            <img src="/static/img/soguk_icecek.jpg" alt="Soğuk içecekler kapak görseli" />
+            <img src="soguk_icecek.jpg" alt="Soğuk içecekler kapak görseli" />
             <div class="actions"><button class="btn primary" id="enter-cold">Menüyü Aç</button></div>
           </div>
         </article>
 
-        <article class="menu-card" id="stage-cats" hidden style="width:auto;height:auto;">
+        <article class="menu-card" id="stage-cats" hidden>
           <div class="head"><h2>Kategori Seç</h2></div>
           <div class="body">
             <nav class="list" id="cat-list"></nav>
@@ -107,7 +170,7 @@
           </div>
         </article>
 
-        <article class="menu-card" id="stage-flavors" hidden style="width:auto;height:auto;">
+        <article class="menu-card" id="stage-flavors" hidden>
           <div class="head"><h2 id="flavor-title">Seçenekler</h2></div>
           <div class="body">
             <div class="flavors" id="flavor-list"></div>
@@ -118,7 +181,8 @@
     </section>
   </main>
 
-  <div id="order-modal" class="modal-backdrop" role="dialog" aria-modal="true">
+  <!-- Modal -->
+  <div id="order-modal" class="modal-backdrop" role="dialog">
     <div class="modal">
       <h3 id="modal-selection">Seçiminiz</h3>
       <p>Lütfen en yakınınızdaki garsonu çağırın.</p>
@@ -127,75 +191,48 @@
   </div>
 
   <script>
-    let CATS = [];
+    async function fetchColdData(){
+      const res = await fetch('/api/cold-data');
+      const data = await res.json();
+      return data.categories || [];
+    }
+
+    async function fetchMarquee(){
+      const res = await fetch('/api/marquee');
+      const data = await res.json();
+      return data.text || "Hoş geldiniz! Moon Cafe'de keyifli vakitler ☕✨";
+    }
+
     const qs = s=>document.querySelector(s);
+    const cover=qs('[data-stage="0"]');
+    const stageCats=qs('#stage-cats');
+    const catList=qs('#cat-list');
+    const stageFlavors=qs('#stage-flavors');
+    const flavorTitle=qs('#flavor-title');
+    const flavorList=qs('#flavor-list');
+    const modal=qs('#order-modal');
+    const modalOk=qs('#modal-ok');
+    const modalSel=qs('#modal-selection');
 
-    const cover = qs('[data-stage="0"]');
-    const stageCats = qs('#stage-cats');
-    const catList = qs('#cat-list');
-    const stageFlavors = qs('#stage-flavors');
-    const flavorTitle = qs('#flavor-title');
-    const flavorList = qs('#flavor-list');
+    modalOk.addEventListener('click',()=>modal.classList.remove('open'));
+    modal.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('open');});
 
-    const modal = qs('#order-modal');
-    const modalOk = qs('#modal-ok');
-    const modalSel = qs('#modal-selection');
-
-    function showModal(titleText){ if(titleText) modalSel.textContent = titleText; modal.classList.add('open'); }
-    function hideModal(){ modal.classList.remove('open'); }
-
-    // Duyuru çek
-    document.addEventListener('DOMContentLoaded', async ()=>{
-      try{
-        const r = await fetch('/api/announcement');
-        const j = await r.json();
-        const txt = (j.text || '').trim();
-        const wrap = document.getElementById('tickerWrap');
-        const track = document.getElementById('ticker');
-
-        if(txt){
-          track.innerHTML = '';
-          for(let i=0;i<3;i++){
-            const sp = document.createElement('span');
-            sp.textContent = txt;
-            track.appendChild(sp);
-          }
-          wrap.style.display = 'block';
-        }else{
-          wrap.style.display = 'none';
-        }
-      }catch(e){ console.error('Duyuru alınamadı', e); }
+    qs('#enter-cold').addEventListener('click',async ()=>{
+      cover.hidden=true;
+      stageCats.hidden=false;
+      const CATS=await fetchColdData();
+      renderCats(CATS);
     });
 
-    document.getElementById('enter-cold').addEventListener('click', async ()=>{
-      try{
-        const res = await fetch('/api/menu');
-        CATS = await res.json();
-      }catch(e){
-        console.error('Menü verisi alınamadı', e);
-        CATS = [];
-      }
-      cover.hidden = true; stageCats.hidden = false; renderCats();
-    });
+    qs('#back-to-cover').addEventListener('click',()=>{stageCats.hidden=true;stageFlavors.hidden=true;cover.hidden=false;});
+    qs('#back-to-cats').addEventListener('click',()=>{stageFlavors.hidden=true;stageCats.hidden=false;});
 
-    document.getElementById('back-to-cover').addEventListener('click', ()=>{
-      stageCats.hidden = true; stageFlavors.hidden = true; cover.hidden = false;
-    });
-
-    document.getElementById('back-to-cats').addEventListener('click', ()=>{
-      stageFlavors.hidden = true; stageCats.hidden = false;
-    });
-
-    modalOk.addEventListener('click', hideModal);
-    modal.addEventListener('click', (e)=>{ if(e.target === modal) hideModal(); });
-
-    function renderCats(){
-      catList.innerHTML = '';
+    function renderCats(CATS){
+      catList.innerHTML='';
       for(const c of CATS){
-        const a = document.createElement('a');
-        a.href = '#'; a.className='list-item'; a.dataset.key=c.key;
-        a.innerHTML = `
-          <div class='thumb'><img src='/static/img/${c.img}' alt='${c.title}'/></div>
+        const a=document.createElement('a');
+        a.href='#';a.className='list-item';a.innerHTML=`
+          <div class='thumb'><img src='${c.img}' alt='${c.title}'/></div>
           <div class='meta'>
             <div class='title-row'>
               <b>${c.title}</b>
@@ -203,28 +240,27 @@
             </div>
             <small>${c.items.length} seçenek</small>
           </div>`;
-        a.addEventListener('click', (e)=>{ e.preventDefault(); openFlavor(c.key); });
+        a.addEventListener('click',e=>{e.preventDefault();openFlavor(c);});
         catList.appendChild(a);
       }
     }
 
-    function openFlavor(key){
-      const c = CATS.find(x=>x.key===key);
-      if(!c) return;
-      flavorTitle.textContent = c.title;
-      flavorList.innerHTML = c.items.map(x=>`<span class='flavor' role='button' tabindex='0'>${capitalize(x)}</span>`).join('');
-      stageCats.hidden = true; stageFlavors.hidden = false;
+    function openFlavor(cat){
+      stageCats.hidden=true;stageFlavors.hidden=false;
+      flavorTitle.textContent=cat.title;
+      flavorList.innerHTML=cat.items.map(x=>`<span class='flavor'>${x}</span>`).join('');
     }
 
-    flavorList.addEventListener('click', (e)=>{
-      const el = e.target.closest('.flavor'); if(!el) return;
-      const currentCat = flavorTitle.textContent.trim();
-      const choice = el.textContent.trim();
-      showModal(`Seçiminiz: ${currentCat} – ${capitalize(choice)}`);
+    flavorList.addEventListener('click',e=>{
+      const el=e.target.closest('.flavor');if(!el)return;
+      modalSel.textContent=`Seçiminiz: ${flavorTitle.textContent} – ${el.textContent}`;
+      modal.classList.add('open');
     });
 
-    const upper = s => s.charAt(0).toUpperCase() + s.slice(1);
-    function capitalize(s){ return upper(s); }
+    (async()=>{
+      const text=await fetchMarquee();
+      qs('#marquee-text').textContent=text;
+    })();
   </script>
 </body>
 </html>
