@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <title>Tat/Çeşit Yönetimi</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body{font-family:system-ui, sans-serif; background:#0b1220; color:#f5fbff; margin:0; padding:22px}
+    .btn{padding:8px 12px; border-radius:10px; border:1px solid #2c3559; background:linear-gradient(90deg,#6ecbff,#a0b6ff); color:#06121f; font-weight:800; cursor:pointer; text-decoration:none}
+    .danger{background:#ff6b6b; border-color:#ff6b6b; color:#fff}
+    ul{list-style:none; padding:0}
+    li{display:flex; align-items:center; gap:10px; margin-bottom:8px}
+    input{padding:8px; border-radius:8px; border:1px solid #2c3559; background:#0f1a33; color:#fff}
+    form{display:inline}
+    a{color:#6ecbff; text-decoration:none}
+  </style>
+</head>
+<body>
+  <h1>{{cat.title}} – Tat/Çeşitler <a href="/admin/cold">← soğuk içecekler</a></h1>
+
+  <ul>
+    {% for f in flavors %}
+      <li>
+        <span>• {{f.name}}</span>
+        <form method="post" action="/admin/flavor/{{f.id}}/delete" onsubmit="return confirm('Silinsin mi?');">
+          <button class="btn danger" type="submit">Sil</button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <h3>Yeni Tat Ekle</h3>
+  <form method="post" action="/admin/cold/{{cat.id}}/flavors/add">
+    <input name="name" placeholder="Örn: çilek" required>
+    <button class="btn" type="submit">Ekle</button>
+  </form>
+</body>
+</html>

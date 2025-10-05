@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <title>Moon Cafe • Admin Giriş</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body{font-family:system-ui, sans-serif; background:#0b1220; color:#f5fbff; display:grid; place-items:center; height:100vh; margin:0}
+    .card{background:#1c2540cc; border:1px solid #2c3559; border-radius:16px; width:min(92vw,380px); padding:18px; box-shadow:0 20px 60px rgba(0,0,0,.45)}
+    h1{margin:0 0 10px; font-size:20px}
+    label{display:block; margin:10px 0 6px}
+    input{width:100%; padding:10px; border-radius:10px; border:1px solid #2c3559; background:#0f1a33; color:#fff}
+    .btn{width:100%; padding:10px; margin-top:12px; border-radius:12px; background:linear-gradient(90deg,#6ecbff,#a0b6ff); border:none; font-weight:800; color:#06121f; cursor:pointer}
+    .err{background:#ff38608f; padding:8px 10px; border-radius:8px; margin-top:8px}
+  </style>
+</head>
+<body>
+  <form class="card" method="post">
+    <h1>Admin Giriş</h1>
+    {% if error %}<div class="err">{{error}}</div>{% endif %}
+    <label>Kullanıcı Adı</label>
+    <input type="text" name="username" placeholder="mudur" required>
+    <label>Şifre</label>
+    <input type="password" name="password" placeholder="••••" required>
+    <button class="btn">Giriş Yap</button>
+  </form>
+</body>
+</html>

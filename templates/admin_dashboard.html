@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <title>Moon Cafe • Yönetim</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body{font-family:system-ui, sans-serif; background:#0b1220; color:#f5fbff; margin:0}
+    header{display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:linear-gradient(180deg, rgba(11,18,32,.9), rgba(11,18,32,.35)); border-bottom:1px solid #ffffff22}
+    .wrap{max-width:900px; margin:0 auto; padding:22px}
+    .grid{display:grid; gap:16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));}
+    .card{padding:18px; border-radius:16px; border:1px solid #2c3559; background:#1c2540cc; box-shadow:0 20px 60px rgba(0,0,0,.45); text-decoration:none; color:inherit}
+    .btn{padding:10px 14px; border-radius:12px; border:1px solid #2c3559; background:linear-gradient(90deg,#6ecbff,#a0b6ff); font-weight:800; color:#06121f; display:inline-block}
+    h2{margin:0 0 8px}
+    .right a{color:#f5fbff}
+    textarea{padding:10px; border-radius:10px; border:1px solid #2c3559; background:#0f1a33; color:#fff; width:100%}
+  </style>
+</head>
+<body>
+  <header>
+    <div><b>Moon Cafe</b> • Yönetim Paneli</div>
+    <div class="right"><a href="/admin/logout">Çıkış</a></div>
+  </header>
+  <main class="wrap">
+
+    <h2 style="margin:0 0 10px">Duyuru / Kampanya Mesajı</h2>
+    <form method="post" action="/admin/announcement" style="margin:0 0 22px; display:grid; gap:8px; max-width:640px">
+      <textarea name="announcement" rows="3" placeholder="Örn: Milkshake’de %20 indirim!">{{ announcement }}</textarea>
+      <button class="btn" type="submit" style="width:fit-content">Duyuruyu Kaydet</button>
+    </form>
+
+    <div class="grid">
+      <a class="card" href="/admin/cold">
+        <h2>Soğuk İçecekler</h2>
+        <p>Alt kategorileri düzenle (Milkshake, Frappe, ...)</p>
+        <span class="btn">Giriş</span>
+      </a>
+      <a class="card" href="#" onclick="alert('Yemekler paneli sonra eklenecek');return false;">
+        <h2>Yemekler</h2>
+        <p>Yakında</p>
+        <span class="btn">Beklemede</span>
+      </a>
+    </div>
+  </main>
+</body>
+</html>
